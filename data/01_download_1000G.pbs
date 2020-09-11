@@ -1,0 +1,32 @@
+#!/bin/bash
+#PBS -q copyq
+#PBS -l mem=4G
+#PBS -l ncpus=1
+#PBS -l walltime=10:00:00
+#PBS -l storage=gdata/tx70
+#PBS -l wd
+#PBS -P rj76
+
+module load bcftools
+
+DATA_MIRROR="ftp://ftp.1000genomes.ebi.ac.uk/vol1/ftp"
+#DATA_MIRROR="ftp://ftp-trace.ncbi.nih.gov/1000genomes/ftp"
+
+for chrom in $(seq 1 22); do
+  if [[ ! -e "ALL.chr${chrom}.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz.done" ]]; then
+    wget -cq "${DATA_MIRROR}/release/20130502/ALL.chr${chrom}.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz" && \
+    touch "ALL.chr${chrom}.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz.done"
+  fi
+  if [[ ! -e "ALL.chr${chrom}.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz.tbi.done" ]]; then
+    wget -cq "${DATA_MIRROR}/release/20130502/ALL.chr${chrom}.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz.tbi" && \
+    touch "ALL.chr${chrom}.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz.tbi.done"
+  fi
+done
+
+rm -f ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.bcf
+lfs setstripe -c8 ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.bcf
+
+bcftools concat -O b -o ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.bcf $(for chrom in $(seq 1 22); do echo -n " ALL.chr${chrom}.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz"; done)
+bcftools index ALL.autosomes.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.bcf
+
+#rm ALL.chr*.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz*

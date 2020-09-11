@@ -1,0 +1,16 @@
+*.txt
+*.done
+*.gz
+*.tbi
+*.bcf
+*.csi
+*.frq
+*.afreq
+*.base
+*.raw
+*.score
+*.spdi
+software/prsice2/PRSice*
+software/plink2/plink2*
+tests/logs
+tests/run1
